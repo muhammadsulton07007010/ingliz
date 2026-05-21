@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Science Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Raleway:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --card2: #1c2333;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --wrong: #f85149;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --radius: 14px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background-image: radial-gradient(ellipse at 20% 10%, rgba(88,166,255,0.08) 0%, transparent 50%),
+                      radial-gradient(ellipse at 80% 90%, rgba(63,185,80,0.06) 0%, transparent 50%);
+  }
+  .wrap { width:100%; max-width:720px; }
+
+  /* HEADER */
+  .header { text-align:center; padding: 28px 0 20px; }
+  .header h1 {
+    font-family: 'Raleway', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 2.6rem);
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+
+  /* PROGRESS */
+  .prog-bar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .prog-track { flex:1; height:7px; background:var(--card2); border-radius:99px; overflow:hidden; }
+  .prog-fill { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:99px; transition: width .4s ease; }
+  .prog-label { font-size:.82rem; color:var(--muted); white-space:nowrap; }
+  .score-pill {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px 12px;
+    font-size: .82rem;
+    color: var(--accent2);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 26px 24px;
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  .q-meta {
+    font-size: .75rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.55;
+    margin-bottom: 22px;
+    color: var(--text);
+  }
+
+  /* OPTIONS */
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 16px;
+    background: var(--card2);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: border-color .18s, background .18s, transform .12s;
+    user-select: none;
+  }
+  .opt:hover:not(.locked) { border-color: var(--accent); background: rgba(88,166,255,0.08); transform: translateX(4px); }
+  .opt.correct { border-color: var(--accent2)!important; background: rgba(63,185,80,0.12)!important; }
+  .opt.wrong   { border-color: var(--wrong)!important; background: rgba(248,81,73,0.10)!important; }
+  .opt.locked  { cursor:default; }
+  .opt-badge {
+    width: 30px; height: 30px; min-width:30px;
+    border-radius: 8px;
+    background: var(--border);
+    display: flex; align-items:center; justify-content:center;
+    font-weight: 800; font-size: .82rem;
+    transition: background .18s;
+  }
+  .opt.correct .opt-badge { background: var(--accent2); color:#0d1117; }
+  .opt.wrong   .opt-badge { background: var(--wrong);   color:#fff; }
+  .opt-txt { font-size:.95rem; font-weight:600; line-height:1.4; }
+
+  /* FEEDBACK */
+  .feedback {
+    margin-top: 14px;
+    padding: 11px 15px;
+    border-radius: 9px;
+    font-size: .88rem;
+    font-weight: 700;
+    display: none;
+    animation: slideUp .22s ease;
+  }
+  .feedback.show { display:block; }
+  .feedback.ok  { background:rgba(63,185,80,.14); color:var(--accent2); border:1px solid rgba(63,185,80,.3); }
+  .feedback.bad { background:rgba(248,81,73,.12); color:#ff7b72; border:1px solid rgba(248,81,73,.28); }
+
+  /* NEXT BTN */
+  .btn-next {
+    margin-top: 18px;
+    width: 100%;
+    padding: 13px;
+    border-radius: 11px;
+    background: var(--accent);
+    color: #0d1117;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    transition: opacity .18s, transform .12s;
+    display: none;
+    animation: slideUp .25s ease;
+  }
+  .btn-next.show { display:block; }
+  .btn-next:hover { opacity:.88; transform: scale(1.01); }
+
+  /* RESULTS */
+  .results { text-align:center; padding: 36px 16px; animation: slideUp .4s ease; }
+  .results .emoji { font-size: 3.6rem; margin-bottom: 12px; }
+  .results h2 { font-family:'Raleway',sans-serif; font-size:1.9rem; font-weight:900; margin-bottom:6px; }
+  .big-score {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 14px 0 4px;
+  }
+  .results .sub { color: var(--muted); font-size:.9rem; margin-bottom: 24px; }
+  .stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:20px 0 28px; }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align:center;
+  }
+  .stat .v { font-size:1.7rem; font-weight:900; margin-bottom:4px; }
+  .stat .l { font-size:.74rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+  .stat.g .v { color:var(--accent2); }
+  .stat.r .v { color:var(--wrong); }
+  .stat.b .v { color:var(--accent); }
+  .btn-restart {
+    padding: 14px 44px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent2), #2ea043);
+    color: #0d1117;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    transition: transform .15s, opacity .18s;
+  }
+  .btn-restart:hover { transform:scale(1.04); opacity:.92; }
+
+  footer { margin-top:28px; color:var(--muted); font-size:.76rem; text-align:center; padding-bottom:18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>💻 Computer Science Quiz</h1>
+    <p>To'g'ri javobni tanlang — har safar yangi tartib!</p>
+  </div>
+  <div id="root"></div>
+  <footer>Har qayta boshlanganda javob variantlari avtomatik aralashadi ✦ Jami 100 ta savol</footer>
+</div>
+
+<script>
+const QUESTIONS_RAW = [
+  {q:"What is a computer?", opts:["A mechanical device","An electronic machine that processes data","A television","A calculator only"], ans:"An electronic machine that processes data"},
+  {q:"Which type of computer processes continuous data?", opts:["Digital computer","Hybrid computer","Analog computer","Microcomputer"], ans:"Analog computer"},
+  {q:"Digital computers use which number system?", opts:["Decimal system","Binary system (0 and 1)","Roman numerals","Alphabet system"], ans:"Binary system (0 and 1)"},
+  {q:"Which type of computer is the most powerful?", opts:["Microcomputer","Minicomputer","Mainframe computer","Supercomputer"], ans:"Supercomputer"},
+  {q:"Which of the following is an example of a microcomputer?", opts:["Laptop","Supercomputer","Mainframe","Hybrid computer"], ans:"Laptop"},
+  {q:"Hybrid computers combine:", opts:["Mainframe and supercomputer","Analog and digital computers","Laptop and desktop","Hardware and software"], ans:"Analog and digital computers"},
+  {q:"Mainframe computers are mostly used in:", opts:["Homes","Schools only","Banks and large organizations","Small shops"], ans:"Banks and large organizations"},
+  {q:"Supercomputers are used for:", opts:["Playing games","Weather forecasting","Typing documents","Watching movies"], ans:"Weather forecasting"},
+  {q:"A smartphone is a type of:", opts:["Mainframe computer","Supercomputer","Microcomputer","Analog computer"], ans:"Microcomputer"},
+  {q:"A computer designed for a specific task is called:", opts:["General-purpose computer","Special-purpose computer","Hybrid computer","Digital computer"], ans:"Special-purpose computer"},
+  {q:"Which device is used to control the cursor on a laptop?", opts:["Screen","Mouse","Keyboard","Touchpad"], ans:"Touchpad"},
+  {q:"What is a laptop?", opts:["A type of phone","A small, portable computer","A large desktop computer","A television"], ans:"A small, portable computer"},
+  {q:"Which of the following is NOT a part of a laptop?", opts:["Keyboard","Mouse","Screen","Printer"], ans:"Printer"},
+  {q:"What do you need to connect your laptop to the internet wirelessly?", opts:["Bluetooth","USB","Wi-Fi","Keyboard"], ans:"Wi-Fi"},
+  {q:"What do you use to type on a laptop?", opts:["Screen","Mouse","Keyboard","Camera"], ans:"Keyboard"},
+  {q:"Which of these is a common laptop brand?", opts:["Apple","Coca-Cola","Samsung","Toyota"], ans:"Apple"},
+  {q:"What does the Wi-Fi do?", opts:["It plays music.","It helps you connect to the internet without cables.","It helps you store data.","It makes your laptop faster."], ans:"It helps you connect to the internet without cables."},
+  {q:"Which part of a laptop allows you to see what you are doing?", opts:["Keyboard","Touchpad","Screen","Speaker"], ans:"Screen"},
+  {q:"What is the main purpose of a laptop?", opts:["To be used only in an office","To carry out tasks like work, study, and entertainment","To print documents","To connect to a home TV"], ans:"To carry out tasks like work, study, and entertainment"},
+  {q:"Which of these actions can you do with a laptop?", opts:["Watch movies","Play games","Send emails","All of the above"], ans:"All of the above"},
+  {q:"A smartphone is a small ______.", opts:["book","device","bag","computer room"], ans:"device"},
+  {q:"We can carry a smartphone in our ______.", opts:["kitchen","classroom","pocket","car"], ans:"pocket"},
+  {q:"With a smartphone, we can ______.", opts:["cook food","send messages","build a house","wash clothes"], ans:"send messages"},
+  {q:"A tablet is ______ than a smartphone.", opts:["smaller","older","bigger","cheaper"], ans:"bigger"},
+  {q:"People often use tablets to ______.", opts:["drive a car","watch videos","clean the house","plant trees"], ans:"watch videos"},
+  {q:"Students use devices to join ______ lessons.", opts:["cooking","sports","online","music"], ans:"online"},
+  {q:"Using devices too much is bad for our ______.", opts:["eyes","hands","shoes","bags"], ans:"eyes"},
+  {q:"Smartphones help people when they ______.", opts:["sleep","travel","eat","run"], ans:"travel"},
+  {q:"A tablet has a large ______.", opts:["camera","battery","screen","keyboard"], ans:"screen"},
+  {q:"We should use technology in a ______ way.", opts:["noisy","safe","dirty","slow"], ans:"safe"},
+  {q:"The motherboard is the ______ board inside the computer.", opts:["small","main","old","broken"], ans:"main"},
+  {q:"All computer parts ______ to the motherboard.", opts:["listen","jump","connect","clean"], ans:"connect"},
+  {q:"The CPU means ______.", opts:["Central Process Unit","Computer Personal Unit","Central Processing Unit","Control Program Unit"], ans:"Central Processing Unit"},
+  {q:"The CPU is called the ______ of the computer.", opts:["hand","brain","eye","screen"], ans:"brain"},
+  {q:"The CPU ______ information.", opts:["eats","deletes","processes","draws"], ans:"processes"},
+  {q:"When you open a program, the ______ works.", opts:["mouse","keyboard","CPU","speaker"], ans:"CPU"},
+  {q:"A good CPU makes the computer ______.", opts:["slower","faster","heavier","smaller"], ans:"faster"},
+  {q:"The motherboard connects the CPU and ______.", opts:["food","RAM","water","paper"], ans:"RAM"},
+  {q:"RAM is a type of ______.", opts:["memory","screen","cable","button"], ans:"memory"},
+  {q:"The motherboard helps all parts work ______.", opts:["alone","together","slowly","badly"], ans:"together"},
+  {q:"The CPU gives ______ to other parts.", opts:["music","pictures","instructions","colors"], ans:"instructions"},
+  {q:"Without the motherboard, the computer cannot ______.", opts:["run","eat","sleep","sing"], ans:"run"},
+  {q:"The CPU works very ______.", opts:["slow","fast","late","quiet"], ans:"fast"},
+  {q:"The motherboard is located ______ the computer.", opts:["outside","under","inside","behind"], ans:"inside"},
+  {q:"The motherboard and CPU must be ______.", opts:["different","broken","compatible","dirty"], ans:"compatible"},
+  {q:"A password is a ______ word or code.", opts:["public","secret","long","easy"], ans:"secret"},
+  {q:"Passwords protect our ______ information.", opts:["old","public","personal","school"], ans:"personal"},
+  {q:"A strong password has ______.", opts:["only numbers","only letters","letters, numbers, and symbols","only your name"], ans:"letters, numbers, and symbols"},
+  {q:"Which password is the weakest?", opts:["T7#kL9!","123456","R8@pQ2","L9!mZ4"], ans:"123456"},
+  {q:"You should not ______ your password.", opts:["change","remember","share","create"], ans:"share"},
+  {q:"It is good to change your password ______.", opts:["never","regularly","once in life","every hour"], ans:"regularly"},
+  {q:"A hacker can enter your account if your password is ______.", opts:["strong","safe","weak","long"], ans:"weak"},
+  {q:"Which of these is a symbol?", opts:["A","5","@","word"], ans:"@"},
+  {q:"Online banking needs a ______.", opts:["password","photo","game","book"], ans:"password"},
+  {q:"A password helps keep your account ______.", opts:["open","safe","slow","empty"], ans:"safe"},
+  {q:"Computer storage is used to ______ information.", opts:["break","save","lose","delete"], ans:"save"},
+  {q:"HDD stands for ______.", opts:["Hard Disk Drive","High Data Device","Home Disk Device","Heavy Disk Record"], ans:"Hard Disk Drive"},
+  {q:"SSD is ______ than an HDD.", opts:["slower","faster","heavier","older"], ans:"faster"},
+  {q:"USB flash drives are ______.", opts:["portable","permanent","slow","heavy"], ans:"portable"},
+  {q:"Cloud storage allows you to save files ______.", opts:["on paper","online","on the CPU only","in a notebook"], ans:"online"},
+  {q:"Storage size is measured in ______.", opts:["meters","bytes","liters","kilograms"], ans:"bytes"},
+  {q:"Which of these can be stored in computer storage?", opts:["photos","videos","documents","all of the above"], ans:"all of the above"},
+  {q:"An SSD is a ______ type of storage.", opts:["modern","old","broken","manual"], ans:"modern"},
+  {q:"A USB flash drive is used to ______ files.", opts:["move","burn","erase","print"], ans:"move"},
+  {q:"Bigger storage allows you to ______ data.", opts:["save more","lose","hide","break"], ans:"save more"},
+  {q:"A bus in a computer is like a ______.", opts:["river","road","house","chair"], ans:"road"},
+  {q:"The bus moves ______ between computer parts.", opts:["chairs","data","food","books"], ans:"data"},
+  {q:"GPU stands for ______.", opts:["General Processing Unit","Graphics Processing Unit","Game Processing Unit","General Program Unit"], ans:"Graphics Processing Unit"},
+  {q:"A GPU helps the computer show ______.", opts:["music","images and videos","water","emails"], ans:"images and videos"},
+  {q:"The bus connects the CPU, memory, and other ______.", opts:["devices","cars","books","chairs"], ans:"devices"},
+  {q:"A GPU is also called a ______.", opts:["graphics card","keyboard","hard drive","monitor"], ans:"graphics card"},
+  {q:"Gamers need a good GPU to make games run ______.", opts:["slowly","smoothly","loudly","rarely"], ans:"smoothly"},
+  {q:"The bus is made of many ______.", opts:["wires","screens","chairs","pencils"], ans:"wires"},
+  {q:"Without a bus, computer parts cannot ______.", opts:["communicate","sleep","eat","cook"], ans:"communicate"},
+  {q:"Designers need a strong GPU for ______.", opts:["painting houses","playing music","video editing","writing books"], ans:"video editing"},
+  {q:"Which of these is an input device?", opts:["Monitor","Keyboard","Speaker","Printer"], ans:"Keyboard"},
+  {q:"What does a mouse help you do?", opts:["Type letters","Move the cursor","Print documents","Scan photos"], ans:"Move the cursor"},
+  {q:"A scanner is used to ______ documents.", opts:["copy","delete","print","draw"], ans:"copy"},
+  {q:"A microphone lets you ______ your voice.", opts:["erase","record","move","click"], ans:"record"},
+  {q:"A touchscreen is ______.", opts:["a type of input device","a printer","a monitor only","a mouse"], ans:"a type of input device"},
+  {q:"Input devices help us ______ with the computer.", opts:["play music","interact","eat","sleep"], ans:"interact"},
+  {q:"Which input device is used to type?", opts:["Mouse","Keyboard","Scanner","Microphone"], ans:"Keyboard"},
+  {q:"Which input device is used for games and apps?", opts:["Touchscreen","Printer","Hard drive","USB flash drive"], ans:"Touchscreen"},
+  {q:"A keyboard has letters, numbers, and ______.", opts:["chairs","symbols","screens","cables"], ans:"symbols"},
+  {q:"Computers cannot work without ______.", opts:["input devices","fans","speakers","cases"], ans:"input devices"},
+  {q:"Which of the following is an output device?", opts:["Keyboard","Mouse","Monitor","Scanner"], ans:"Monitor"},
+  {q:"What is the main function of a printer?", opts:["To display images","To store data","To produce documents on paper","To process information"], ans:"To produce documents on paper"},
+  {q:"Why are speakers considered output devices?", opts:["They store data","They produce sound","They input commands","They edit documents"], ans:"They produce sound"},
+  {q:"A projector is most often used for:", opts:["Listening to music","Printing documents","Displaying presentations on a large screen","Writing text"], ans:"Displaying presentations on a large screen"},
+  {q:"Which device is best for private listening to music?", opts:["Monitor","Headphones","Projector","Printer"], ans:"Headphones"},
+  {q:"High resolution on a monitor improves:", opts:["Sound quality","Image clarity","Document size","File storage"], ans:"Image clarity"},
+  {q:"Which of these is NOT an output device?", opts:["Speakers","Printer","Keyboard","Monitor"], ans:"Keyboard"},
+  {q:"What type of output do speakers provide?", opts:["Visual","Audio","Digital text","Printed document"], ans:"Audio"},
+  {q:"Why is a projector useful in classrooms or meetings?", opts:["It prints large documents","It allows everyone to see the computer screen clearly","It stores multimedia files","It plays audio"], ans:"It allows everyone to see the computer screen clearly"},
+  {q:"Which of the following terms is related to output quality on a screen?", opts:["Resolution","Input","Keyboard","Mouse"], ans:"Resolution"},
+  {q:"What is a digital document?", opts:["A document written on paper","A document in electronic format","A book in a library","A handwritten note"], ans:"A document in electronic format"},
+  {q:"Which of the following is an example of a digital document?", opts:["PDF","Notebook","Newspaper","Letter on paper"], ans:"PDF"},
+  {q:"Which device can be used to create or edit digital documents?", opts:["Tablet","Pen","Whiteboard","Filing cabinet"], ans:"Tablet"},
+  {q:"What is one advantage of digital documents?", opts:["They take up a lot of physical space","They are difficult to edit","They can be shared instantly online","They cannot be stored on computers"], ans:"They can be shared instantly online"},
+  {q:"How can sensitive information in digital documents be protected?", opts:["By printing it","By leaving it open","By encryption and passwords","By handwriting"], ans:"By encryption and passwords"}
+];
+
+// --- Utilities ---
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleQuestions(raw) {
+  return shuffle(raw).map(q => {
+    const shuffled = shuffle(q.opts);
+    return { q: q.q, opts: shuffled, ansIdx: shuffled.indexOf(q.ans) };
+  });
+}
+
+// --- State ---
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+
+function start() {
+  questions = shuffleQuestions(QUESTIONS_RAW);
+  current = 0;
+  score = 0;
+  answered = false;
+  render();
+}
+
+// --- Render ---
+const root = document.getElementById('root');
+const LETTERS = ['A','B','C','D'];
+
+function render() {
+  if (current >= questions.length) { renderResults(); return; }
+  const q = questions[current];
+  const pct = Math.round((current / questions.length) * 100);
+
+  root.innerHTML = `
+    <div class="prog-bar-wrap">
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <span class="prog-label">${current + 1} / ${questions.length}</span>
+      <span class="score-pill">✓ ${score}</span>
+    </div>
+    <div class="card" id="qcard">
+      <div class="q-meta">Savol ${current + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts">
+        ${q.opts.map((o, i) => `
+          <div class="opt" id="opt${i}" onclick="choose(${i})">
+            <div class="opt-badge">${LETTERS[i]}</div>
+            <div class="opt-txt">${o}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="btn-next" id="btnNext" onclick="next()">
+        ${current + 1 < questions.length ? "Keyingisi →" : "Natijani ko'rish 🏁"}
+      </button>
+    </div>
+  `;
+}
+
+function choose(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const opts = document.querySelectorAll('.opt');
+  const fb = document.getElementById('fb');
+  const btn = document.getElementById('btnNext');
+
+  opts.forEach(o => o.classList.add('locked'));
+
+  if (idx === q.ansIdx) {
+    score++;
+    opts[idx].classList.add('correct');
+    fb.textContent = "✅ To'g'ri javob!";
+    fb.className = 'feedback show ok';
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[q.ansIdx].classList.add('correct');
+    fb.textContent = `❌ Noto'g'ri. To'g'ri javob: "${q.opts[q.ansIdx]}"`;
+    fb.className = 'feedback show bad';
+  }
+
+  btn.classList.add('show');
+}
+
+function next() {
+  current++;
+  answered = false;
+  render();
+}
+
+function renderResults() {
+  const total = questions.length;
+  const wrong = total - score;
+  const pct = Math.round((score / total) * 100);
+  let emoji = '😔', msg = 'Ko\'proq mashq qiling!';
+  if (pct >= 90) { emoji = '🏆'; msg = 'Ajoyib natija!'; }
+  else if (pct >= 70) { emoji = '🎉'; msg = 'Yaxshi natija!'; }
+  else if (pct >= 50) { emoji = '💪'; msg = 'Yaxshi, lekin yaxshilanish mumkin!'; }
+
+  root.innerHTML = `
+    <div class="card results">
+      <div class="emoji">${emoji}</div>
+      <h2>${msg}</h2>
+      <div class="big-score">${pct}%</div>
+      <p>${score} ta to'g'ri, ${wrong} ta noto'g'ri (jami ${total} ta savol)</p>
+      <div class="stats">
+        <div class="stat g"><div class="v">${score}</div><div class="l">To'g'ri</div></div>
+        <div class="stat r"><div class="v">${wrong}</div><div class="l">Noto'g'ri</div></div>
+        <div class="stat b"><div class="v">${pct}%</div><div class="l">Ball</div></div>
+      </div>
+      <button class="btn-restart" onclick="start()">🔄 Qayta boshlash</button>
+    </div>
+  `;
+}
+
+start();
+</script>
+</body>
+</html>
